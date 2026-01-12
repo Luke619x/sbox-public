@@ -309,8 +309,11 @@ public partial class SceneNetworkSystem : GameNetworkSystem
 
 		foreach ( var system in systems )
 		{
+			var snapshotData = WriteGameObjectSystemSnapshot( system );
+
 			var type = new SnapshotMsg.GameObjectSystemData
 			{
+				SnapshotData = snapshotData,
 				TableData = system.WriteDataTable( true ),
 				Type = Game.TypeLibrary.GetType( system.GetType() ).Identity,
 				Id = system.Id
@@ -326,6 +329,31 @@ public partial class SceneNetworkSystem : GameNetworkSystem
 		analytic.SetValue( "Machine", Environment.MachineName );
 
 		analytic.Submit();
+	}
+
+	/// <summary>
+	/// Write any snapshot data from <see cref="Component.INetworkSnapshot"/> for a <see cref="GameObjectSystem"/>.
+	/// </summary>
+	private static byte[] WriteGameObjectSystemSnapshot( GameObjectSystem system )
+	{
+		if ( system is not Component.INetworkSnapshot snapshot )
+			return null;
+
+		var bs = ByteStream.Create( 512 );
+
+		try
+		{
+			snapshot.WriteSnapshot( ref bs );
+		}
+		catch ( Exception e )
+		{
+			Log.Warning( e );
+		}
+
+		var snapshotData = bs.ToArray();
+		bs.Dispose();
+
+		return snapshotData;
 	}
 
 	public override void Dispose()
@@ -400,7 +428,7 @@ public partial class SceneNetworkSystem : GameNetworkSystem
 	}
 
 	/// <summary>
-	/// We have recieved a snapshot of the world.
+	/// We have received a snapshot of the world.
 	/// </summary>
 	public override async Task SetSnapshotAsync( SnapshotMsg msg )
 	{
@@ -455,6 +483,8 @@ public partial class SceneNetworkSystem : GameNetworkSystem
 
 			system.Id = s.Id;
 			system.ReadDataTable( s.TableData );
+
+			ReadGameObjectSystemSnapshot( system, s );
 		}
 
 		MountedVPKs?.Dispose();
@@ -474,6 +504,31 @@ public partial class SceneNetworkSystem : GameNetworkSystem
 		}
 
 		Game.IsPlaying = true;
+	}
+
+	/// <summary>
+	/// Read any snapshot data from <see cref="Component.INetworkSnapshot"/> for a <see cref="GameObjectSystem"/>.
+	/// </summary>
+	private static void ReadGameObjectSystemSnapshot( GameObjectSystem system, SnapshotMsg.GameObjectSystemData s )
+	{
+		if ( system is not Component.INetworkSnapshot snapshot )
+			return;
+
+		if ( s.SnapshotData is null )
+			return;
+
+		var bs = ByteStream.CreateReader( s.SnapshotData );
+
+		try
+		{
+			snapshot.ReadSnapshot( ref bs );
+		}
+		catch ( Exception e )
+		{
+			Log.Warning( e );
+		}
+
+		bs.Dispose();
 	}
 
 	/// <summary>
