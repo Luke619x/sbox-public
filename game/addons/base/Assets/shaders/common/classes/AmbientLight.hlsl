@@ -32,15 +32,15 @@ class AmbientLight
         }
     }
 
-    static float3 From( float3 WorldPosition, float2 ScreenPosition,  float3 WorldNormal, float2 LightMapUV = 0.0f )
+    static float3 From( float3 WorldPosition, float3 WorldNormal, float2 LightMapUV = 0.0f )
     {
         switch( GetKind() )
         {
             case AmbientLightKind::EnvMapProbe:
-                return FromEnvMapProbe( WorldPosition, ScreenPosition, WorldNormal );
+                return FromEnvMapProbe( WorldPosition, WorldNormal );
                 break;
             case AmbientLightKind::LightMapProbeVolume:
-                return FromLightMapProbeVolume( WorldPosition, ScreenPosition, WorldNormal );
+                return FromLightMapProbeVolume( WorldPosition, WorldNormal );
                 break;
             case AmbientLightKind::LightMap2D:
                 return 0.0f;
@@ -48,12 +48,12 @@ class AmbientLight
         return 0.0f;
     }
 
-    static float3 FromEnvMapProbe(float3 WorldPosition, float2 ScreenPosition, float3 WorldNormal);
-    static float3 FromLightMapProbeVolume(float3 WorldPosition, float2 ScreenPosition, float3 WorldNormal);
+    static float3 FromEnvMapProbe(float3 WorldPosition, float3 WorldNormal);
+    static float3 FromLightMapProbeVolume(float3 WorldPosition, float3 WorldNormal);
     static float3 FromLightMap(float3 WorldPosition, float2 LightMapUV);
 };
 
-float3 AmbientLight::FromEnvMapProbe(float3 WorldPosition, float2 ScreenPosition, float3 WorldNormal)
+float3 AmbientLight::FromEnvMapProbe(float3 WorldPosition, float3 WorldNormal)
 {
     float accumulatedDistance = 0.0f;
     float3 ambientLightColor = float3(0.0, 0.0, 0.0);
@@ -131,7 +131,7 @@ float3 AmbientLight::FromEnvMapProbe(float3 WorldPosition, float2 ScreenPosition
     return ambientLightColor;
 }
 
-float3 AmbientLight::FromLightMapProbeVolume(float3 WorldPosition, float2 ScreenPosition, float3 WorldNormal)
+float3 AmbientLight::FromLightMapProbeVolume(float3 WorldPosition, float3 WorldNormal)
 {
     float3 vAmbientCube[6];
     SampleLightProbeVolume(vAmbientCube, WorldPosition);

@@ -31,6 +31,9 @@ internal partial class RenderPipeline
 		{
 			LightbinnerLayer.Setup( pipelineAttributes );
 			LightbinnerLayer.AddToView( view, viewport );
+
+			ClusteredCullingLayer.Setup( view, viewport );
+			ClusteredCullingLayer.AddToView( view, viewport );
 		}
 
 
@@ -64,9 +67,6 @@ internal partial class RenderPipeline
 		{
 			DepthDownsampleLayer.Setup( viewport, rtDepth, msaaInput: msaa != MultisampleAmount.MultisampleNone, view );
 			DepthDownsampleLayer.AddToView( view, viewport );
-
-			ClusteredCullingLayer.Setup( view, viewport );
-			ClusteredCullingLayer.AddToView( view, viewport );
 		}
 
 		// Bloom layer, Effects that only show up on bloom like a ghost effect
