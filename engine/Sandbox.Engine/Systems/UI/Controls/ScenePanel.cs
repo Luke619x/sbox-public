@@ -128,6 +128,7 @@ namespace Sandbox.UI
 				}
 				else if ( RenderScene.IsValid() && RenderScene.Camera.IsValid() )
 				{
+					RenderScene.PreCameraRender(); // TODO WTF?... terrible hack to get around Graphics.IsActive guard in RenderToTexture
 					RenderScene.Camera.RenderToTexture( RenderTexture );
 				}
 			}
