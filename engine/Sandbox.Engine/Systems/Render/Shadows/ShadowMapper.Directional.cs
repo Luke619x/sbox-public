@@ -16,7 +16,8 @@ unsafe struct GPUDirectionalLight
 	public fixed int ShadowMapIndex[4];
 	public uint CascadeCount;
 	public float InverseShadowMapSize;
-	public Vector2 Padding;
+	public float Padding;
+	public bool Enabled;
 	public fixed float CascadeHardness[4];
 	public Vector4 CascadeSphere0;
 	public Vector4 CascadeSphere1;
@@ -268,6 +269,9 @@ internal partial class ShadowMapper
 	/// </summary>
 	internal unsafe void FindOrCreateDirectionalShadowMaps( SceneLight light, ISceneView view )
 	{
+		if ( !light.ShadowsEnabled )
+			return;
+
 		int numCascades = Math.Min( light.lightNative.GetShadowCascades(), MaxCascades );
 		float farClip = CascadeDistance;
 		int shadowmapSize = MaxCascadeResolution;
@@ -279,6 +283,7 @@ internal partial class ShadowMapper
 			: SceneObjectFlags.None;
 
 		GPUDirectionalLight gpuShadowData = new();
+		gpuShadowData.Enabled = true;
 
 		// A bit overreach for shadowmapper
 		gpuShadowData.Color = new Vector4( light.LightColor, light.FogStrength );
